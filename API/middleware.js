@@ -2,9 +2,16 @@ const { verificarToken } = require("@damianegreco/hashpass");
 const { TOKEN_SECRET } = process.env;
 
 module.exports = function middleware(req, res, next) {
-  const token = req.headers.authorization; // token directo (estilo profe)
+  const auth = req.headers.authorization;
 
-  if (!token) return res.status(401).send("Sin permisos");
+  if (!auth) {
+    return res.status(401).send("Sin token");
+  }
+
+  // acepta "Bearer xxx"
+  const token = auth.startsWith("Bearer ")
+    ? auth.split(" ")[1]
+    : auth;
 
   const verificacion = verificarToken(token, TOKEN_SECRET);
 
