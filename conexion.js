@@ -21,4 +21,5 @@ async function probarConexion() {
 }
 probarConexion();
 
+// ✅ ESTA LÍNEA ES LA CLAVE
 module.exports = db;

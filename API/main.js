@@ -1,18 +1,8 @@
 const router = require("express").Router();
 
-const middleware = require("./middleware");
-
-const usuarios = require("./usuarios/main");
-const profesionales = require("./profesionales/main");
-const turnos = require("./turnos/main");
-
-// público
-router.use("/usuarios", usuarios);
-
-// protegidos
-router.use("/profesionales", middleware, profesionales);
-router.use("/turnos", middleware, turnos);
-
-router.get("/", (req, res) => res.send("API OK"));
+// ✅ cada módulo cuelga acá
+router.use("/usuarios", require("./usuarios/main"));
+router.use("/turnos", require("./turnos/main"));
+router.use("/profesionales", require("./profesionales/main"));
 
 module.exports = router;
