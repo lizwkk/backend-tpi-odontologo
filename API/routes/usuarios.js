@@ -25,5 +25,14 @@ router.post("/registro", (req, res) => {
       res.status(500).send("Error al registrar");
     });
 });
+router.get("/", (req, res) => {
+  const sql = "SELECT id, nombre, email, rol FROM usuarios";
 
+  db.query(sql)
+    .then(([rows]) => res.json(rows))
+    .catch((err) => {
+      console.error(err);
+      res.status(500).send("Error");
+    });
+});
 module.exports = router;
