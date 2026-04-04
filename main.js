@@ -1,16 +1,15 @@
 const router = require("express").Router();
-const db = require("./conexion");
-const { hashPass } = require("@damianegreco/hashpass");
+const verificarLog = require("./verificarLog"); 
 
-const loginRouter = require("./login");
-const turnosRouter = require(".API/routes/turnos");
-const profesionalesRouter = require("./API/routes/profesionales");
-const usuariosRouter = require("./API/routes/usuarios");
+const loginRouter = require("./routes/login");
+const usuariosRouter = require("./routes/usuarios");
+const turnosRouter = require("./routes/turnos");
+const profesionalesRouter = require("./routes/profesionales");
 
-// Montar rutas
-router.use("/profesionales", profesionalesRouter);
-router.use("/usuarios", usuariosRouter);
 router.use("/login", loginRouter);
-router.use("/turnos", turnosRouter);
+router.use("/usuarios", usuariosRouter);
+
+router.use("/turnos", verificarLog(["paciente", "admin"]), turnosRouter);
+router.use("/profesionales", verificarLog(["paciente", "admin"]), profesionalesRouter);
 
 module.exports = router;

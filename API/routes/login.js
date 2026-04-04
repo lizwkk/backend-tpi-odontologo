@@ -1,50 +1,42 @@
-const router = require("express").Router();
-const db = require("../../conexion");
-
+const router = require('express').Router();
+const db = require('../../conexion');
 const { verificarPass, generarToken } = require("@damianegreco/hashpass");
+const { TOKEN_SECRET } = process.env;
 
-router.post("/", (req, res) => {
-  try {
+router.post("/", function(req, res) {
     const { email, pass } = req.body;
-
-    if (!email || !pass) return res.status(400).send("Faltan datos");
-
-    const sql = "SELECT id, nombre, email, pass_hash, rol FROM usuarios WHERE email = ?";
+    const sql = "SELECT id_usuario, nombre, email, pass, rol FROM usuarios WHERE email = ?";
 
     db.query(sql, [email])
-      .then(([rows]) => {
-        if (rows.length !== 1) return res.status(401).send("Credenciales incorrectas");
-
-        const user = rows[0];
-
-        const ok = verificarPass(pass, user.pass_hash);
-        if (!ok) return res.status(401).send("Credenciales incorrectas");
-
-        const datos = {
-          id: user.id,
-          nombre: user.nombre,
-          email: user.email,
-          rol: user.rol ?? "user",
-        };
-
-        const TOKEN_SECRET = process.env.TOKEN_SECRET;
-        if (!TOKEN_SECRET) {
-          console.error("Falta TOKEN_SECRET en .env");
-          return res.status(500).send("Config inválida (TOKEN_SECRET)");
+    .then(([rows]) => {
+        if (rows.length === 1) {
+            const usuario = rows[0];
+            if (verificarPass(pass, usuario.pass)) {
+                const datos = {
+                    id: usuario.id_usuario,
+                    nombre: usuario.nombre,
+                    rol: usuario.rol
+                };
+                const token = generarToken(TOKEN_SECRET, 6, datos);
+                
+                res.json({ 
+                    status: "ok", 
+                    token, 
+                    rol: usuario.rol, 
+                    id_usuario: usuario.id_usuario, 
+                    nombre: usuario.nombre 
+                });
+            } else {
+                res.status(401).send("Contraseña incorrecta");
+            }
+        } else {
+            res.status(401).send("Usuario no encontrado");
         }
-
-        const token = generarToken(TOKEN_SECRET, 6, datos);
-
-        res.json({ ok: true, token, user: datos });
-      })
-      .catch((err) => {
-        console.error("Error DB login:", err);
-        res.status(500).send("Error en login");
-      });
-  } catch (err) {
-    console.error("Error general login:", err);
-    res.status(500).send("Error en login");
-  }
+    })
+    .catch((error) => {
+        console.error(error);
+        res.status(500).send("Error en el servidor");
+    });
 });
 
 module.exports = router;

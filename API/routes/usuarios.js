@@ -1,38 +1,33 @@
-const router = require("express").Router();
-const db = require("../../conexion");
+const router = require('express').Router();
+const db = require('../../conexion'); 
 const { hashPass } = require("@damianegreco/hashpass");
+const verificarLog = require("../verificarLog"); 
 
-const loginRouter = require("./login");
+router.post("/", function(req, res) {
+    const { nombre, email, pass } = req.body;
+    const sql = 'INSERT INTO usuarios (nombre, email, pass, rol) VALUES (?, ?, ?, "paciente")';
+    const passHasheada = hashPass(pass);
 
-// ✅ POST /api/usuarios/login
-router.use("/login", loginRouter);
-
-// ✅ POST /api/usuarios/registro
-router.post("/registro", (req, res) => {
-  const { nombre, email, pass } = req.body;
-
-  if (!nombre || !email || !pass) return res.status(400).send("Faltan datos");
-
-  const pass_hash = hashPass(pass);
-
-  const sql = "INSERT INTO usuarios (nombre, email, pass_hash) VALUES (?, ?, ?)";
-
-  db.query(sql, [nombre, email, pass_hash])
-    .then(([result]) => res.status(201).json({ ok: true, id: result.insertId }))
-    .catch((err) => {
-      console.error(err);
-      if (err.code === "ER_DUP_ENTRY") return res.status(409).send("Email ya registrado");
-      res.status(500).send("Error al registrar");
+    db.query(sql, [nombre, email, passHasheada])
+    .then(() => {
+        res.status(201).send("Usuario registrado con éxito");
+    })
+    .catch((error) => {
+        console.error(error);
+        res.status(500).send("Error al registrar usuario");
     });
 });
-router.get("/", (req, res) => {
-  const sql = "SELECT id, nombre, email, rol FROM usuarios";
 
-  db.query(sql)
-    .then(([rows]) => res.json(rows))
-    .catch((err) => {
-      console.error(err);
-      res.status(500).send("Error");
+router.get("/", verificarLog(["admin"]), function(req, res) {
+    const sql = 'SELECT id_usuario, nombre, email, rol FROM usuarios';
+    db.query(sql)
+    .then(([usuarios]) => {
+        res.status(200).json({ usuarios });
+    })
+    .catch((error) => {
+        console.error(error);
+        res.status(500).send("Error al obtener usuarios");
     });
 });
+
 module.exports = router;
