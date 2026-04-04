@@ -1,7 +1,10 @@
 const router = require("express").Router();
-const middleware = require("./middleware/middleware");
+const verificarLog = require("./verificarLog"); 
+
 router.use("/usuarios", require("./routes/usuarios"));
-router.use("/turnos", middleware, require("./routes/turnos")); 
-router.use("/profesionales", middleware, require("./routes/profesionales"));
+router.use("/login", require("./routes/login"));
+
+router.use("/turnos", verificarLog(["paciente", "admin"]), require("./routes/turnos"));
+router.use("/profesionales", verificarLog(["paciente", "admin"]), require("./routes/profesionales"));
 
 module.exports = router;

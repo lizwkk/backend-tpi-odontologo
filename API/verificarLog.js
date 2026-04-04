@@ -12,7 +12,7 @@ const verificarLog = (roles = []) => {
         const verificacion = verificarToken(token, TOKEN_SECRET);
 
         if (verificacion?.data && roles.includes(verificacion.data.rol)) {
-            req.user = verificacion.data;
+            req.user = verificacion.data; 
             next();
         } else {
             res.status(401).send("Token inválido o permisos insuficientes");

@@ -4,7 +4,8 @@ const cors = require("cors");
 const express = require('express');
 
 const app = express();
-const puerto = process.env.PUERTO || 3000; 
+const puerto = process.env.PUERTO || 3000;
+
 app.use(cors({
   origin: "http://localhost:5173",
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
@@ -12,14 +13,13 @@ app.use(cors({
 }));
 
 app.use(express.json());
-app.use('/archivos', express.static(path.join(__dirname, 'src/archivos')));
 
-// Según la imagen de tu amiga, ella usa una carpeta "routes" dentro de "src"
-const turnosRoutes = require('./src/routes/turnos.routes');
-const usuariosRoutes = require('./src/routes/usuarios.routes');
 
-app.use("/api/turnos", turnosRoutes);
-app.use("/api/usuarios", usuariosRoutes);
+app.use('/archivos', express.static(path.join(__dirname, 'archivos')));
+
+
+const apiRouter = require('./API/main'); 
+app.use("/api", apiRouter);
 
 const server = app.listen(puerto, (error) => {
   if (error) {
