@@ -4,7 +4,7 @@ const verificarLog = require("./verificarLog");
 router.use("/usuarios", require("./routes/usuarios"));
 router.use("/login", require("./routes/login"));
 
-router.use("/turnos", verificarLog(["paciente", "admin"]), require("./routes/turnos"));
-router.use("/profesionales", verificarLog(["paciente", "admin"]), require("./routes/profesionales"));
+router.use("/turnos", verificarLog(["user", "admin"]), require("./routes/turnos"));
+router.use("/profesionales", verificarLog(["user", "admin"]), require("./routes/profesionales"));
 
 module.exports = router;

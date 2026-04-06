@@ -9,7 +9,7 @@ const profesionalesRouter = require("./routes/profesionales");
 router.use("/login", loginRouter);
 router.use("/usuarios", usuariosRouter);
 
-router.use("/turnos", verificarLog(["paciente", "admin"]), turnosRouter);
-router.use("/profesionales", verificarLog(["paciente", "admin"]), profesionalesRouter);
+router.use("/turnos", verificarLog(["user", "admin"]), turnosRouter);
+router.use("/profesionales", verificarLog(["user", "admin"]), profesionalesRouter);
 
 module.exports = router;
