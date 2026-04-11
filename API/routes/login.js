@@ -6,7 +6,7 @@ const db = require('../../conexion');
 router.post("/", function(req, res, next) {
     const { email, pass } = req.body;
 
-    // Usamos TUS columnas: id y pass_hash
+    // Buscamos al usuario por email
     let sql = "SELECT id, nombre, email, pass_hash, rol FROM usuarios WHERE email = ?";
 
     db.query(sql, [email])
@@ -14,7 +14,7 @@ router.post("/", function(req, res, next) {
         if (rows.length === 1) {
             const usuario = rows[0];
             
-            // Usamos verificarPass con tu columna pass_hash
+            // Comparamos la contraseña que envió el usuario con el hash de la BD
             if (verificarPass(pass, usuario.pass_hash)) {
                 
                 const datos = {
@@ -24,7 +24,7 @@ router.post("/", function(req, res, next) {
                     rol: usuario.rol
                 };
 
-                // Generar token igual que ella
+                // Generamos el token de seguridad
                 const token = generarToken(TOKEN_SECRET, 6, datos);
 
                 res.json({
@@ -35,17 +35,15 @@ router.post("/", function(req, res, next) {
                     nombre: usuario.nombre
                 });
             } else {
-                console.log("Contraseña incorrecta");
                 res.status(401).send("Usuario o contraseña incorrectos");
             }
         } else {
-            console.log("Usuario no encontrado");
             res.status(401).send("Usuario o contraseña incorrectos");
         }
     })
     .catch((error) => {
         console.error(error);
-        res.status(500).send("Ocurrió un error");
+        res.status(500).send("Error interno del servidor");
     });
 });
 
