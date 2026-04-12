@@ -7,7 +7,7 @@ router.get("/admin", verificarLog(["admin"]), function(req, res) {
       SELECT t.*, p.nombre AS profesional_nombre, u.nombre AS paciente_nombre
       FROM turnos t
       JOIN profesionales p ON p.id = t.profesional_id
-      JOIN usuarios u ON u.id = t.usuario_id
+      JOIN usuarios u ON u.id = t.id
       ORDER BY t.fecha DESC, t.hora DESC
     `;
 
@@ -22,7 +22,6 @@ router.get("/admin", verificarLog(["admin"]), function(req, res) {
 });
 
 router.get("/mis-turnos", verificarLog(["user", "admin"]), function(req, res) {
-    // Si tu verificarLog guarda los datos en req.usuario, cambiá .user por .usuario
     const usuarioId = req.user?.id || req.usuario?.id; 
     
     const sql = `
@@ -42,7 +41,6 @@ router.get("/mis-turnos", verificarLog(["user", "admin"]), function(req, res) {
         res.status(500).send("Error al obtener los turnos");
     });
 });
-
 
 router.post("/", verificarLog(["user", "admin"]), function(req, res) {
     const usuarioId = req.user?.id || req.usuario?.id;
