@@ -2,7 +2,6 @@ const router = require("express").Router();
 const db = require("../../conexion");
 const verificarLog = require("../verificarLog"); 
 
-// GET /api/turnos/admin -> TRAE TODOS LOS TURNOS (Solo para el Admin)
 router.get("/admin", verificarLog(["admin"]), function(req, res) {
     const sql = `
       SELECT t.*, p.nombre AS profesional_nombre, u.nombre AS paciente_nombre
@@ -22,9 +21,10 @@ router.get("/admin", verificarLog(["admin"]), function(req, res) {
     });
 });
 
-// GET /api/turnos -> TRAE LOS TURNOS DEL PACIENTE LOGUEADO
-router.get("/", verificarLog(["user", "admin"]), function(req, res) {
-    const usuarioId = req.user.id; 
+router.get("/mis-turnos", verificarLog(["user", "admin"]), function(req, res) {
+    // Si tu verificarLog guarda los datos en req.usuario, cambiá .user por .usuario
+    const usuarioId = req.user?.id || req.usuario?.id; 
+    
     const sql = `
       SELECT t.*, p.nombre AS profesional_nombre, p.especialidad AS profesional_especialidad
       FROM turnos t
@@ -43,10 +43,10 @@ router.get("/", verificarLog(["user", "admin"]), function(req, res) {
     });
 });
 
-// POST /api/turnos -> CREAR TURNO
+
 router.post("/", verificarLog(["user", "admin"]), function(req, res) {
-    const usuarioId = req.user.id;
-    const { id_profesional, fecha, hora, notas } = req.body; // Asegúrate que el front mande id_profesional
+    const usuarioId = req.user?.id || req.usuario?.id;
+    const { id_profesional, fecha, hora, notas } = req.body;
     
     const sql = "INSERT INTO turnos (usuario_id, profesional_id, fecha, hora, notas, estado) VALUES (?, ?, ?, ?, ?, 'reservado')";
 
@@ -60,13 +60,12 @@ router.post("/", verificarLog(["user", "admin"]), function(req, res) {
     });
 });
 
-// DELETE /api/turnos/:id -> CANCELAR/ELIMINAR
+
 router.delete("/:id", verificarLog(["user", "admin"]), function(req, res) {
     const { id } = req.params;
-    const usuarioId = req.user.id;
-    const rol = req.user.rol;
+    const usuarioId = req.user?.id || req.usuario?.id;
+    const rol = req.user?.rol || req.usuario?.rol;
 
-    // Si es usuario común, solo puede borrar los suyos. Si es admin, cualquiera.
     let sql = "DELETE FROM turnos WHERE id = ? AND usuario_id = ?";
     let params = [id, usuarioId];
 
