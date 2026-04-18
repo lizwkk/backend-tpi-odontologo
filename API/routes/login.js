@@ -13,7 +13,7 @@ router.post("/", function(req, res, next) {
     .then(([rows]) => {
         if (rows.length === 1) {
             const usuario = rows[0];
-            
+            console.log("Usuario encontrado:", usuario);
             // Comparamos la contraseña que envió el usuario con el hash de la BD
             if (verificarPass(pass, usuario.pass_hash)) {
                 
@@ -30,8 +30,8 @@ router.post("/", function(req, res, next) {
                 res.json({
                     status: "ok", 
                     token, 
+                    id: usuario.id, 
                     rol: usuario.rol, 
-                    id_usuario: usuario.id, 
                     nombre: usuario.nombre
                 });
             } else {
