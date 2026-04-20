@@ -2,7 +2,6 @@ const router = require("express").Router();
 const db = require("../../conexion");
 const verificarLog = require("../verificarLog"); 
 
-// 1. OBTENER TODOS LOS TURNOS (PARA EL PANEL ADMIN)
 router.get("/admin", verificarLog(["admin"]), function(req, res) {
     const sql = `
       SELECT 
@@ -55,6 +54,7 @@ router.get("/mis-turnos", verificarLog(["user", "admin"]), function(req, res) {
 // 3. CREAR UN NUEVO TURNO (RESERVAR)
 router.post("/", verificarLog(["user", "admin"]), function(req, res) {
     const usuarioId = req.user?.id || req.usuario?.id;
+    console.log("Datos del Token:", req.user);
     const { id_profesional, fecha, hora, notas } = req.body;
     
     if (!usuarioId) {
