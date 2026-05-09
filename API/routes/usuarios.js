@@ -4,32 +4,40 @@ const { hashPass } = require("@damianegreco/hashpass");
 const verificarLog = require("../verificarLog"); 
 
 router.post("/", function(req, res) {
-    // 1. Recibimos los datos. Si el 'rol' no viene en el body, 
-    // le ponemos 'paciente' por defecto.
     const { nombre, email, pass, rol } = req.body;
-    const rolFinal = rol || "paciente"; 
-
+    
+    // 1. Verificación: Si falta algo, avisamos antes de tocar la DB
     if (!nombre || !email || !pass) {
-        return res.status(400).send("Faltan datos obligatorios");
+        return res.status(400).send("Faltan datos obligatorios (nombre, email o pass)");
     }
 
-    const passHasheada = hashPass(pass);
+    // 2. IMPORTANTE: Usamos "user" en vez de "paciente" para que 
+    // después el login no se confunda.
+    const rolFinal = rol || "user"; 
 
-    // 2. Usamos el rolFinal en la consulta SQL
-    const sql = 'INSERT INTO usuarios (nombre, email, pass_hash, rol) VALUES (?, ?, ?, ?)';
+    try {
+        // 3. Hasheamos la pass que viene de React
+        const passHasheada = hashPass(pass);
 
-    db.query(sql, [nombre, email, passHasheada, rolFinal])
-    .then(() => {
-        res.status(201).json({ status: "ok", message: "Usuario registrado con éxito" });
-    })
-    .catch((error) => {
-        // Error común: el email ya existe (Duplicate entry)
-        if (error.code === 'ER_DUP_ENTRY') {
-            return res.status(400).send("El email ya está registrado");
-        }
-        console.error("Error en DB:", error);
-        res.status(500).send("Error al registrar usuario");
-    });
+        // 4. SQL: Asegurate que en tu phpMyAdmin las columnas se llamen así
+        const sql = 'INSERT INTO usuarios (nombre, email, pass_hash, rol) VALUES (?, ?, ?, ?)';
+
+        db.query(sql, [nombre, email, passHasheada, rolFinal])
+        .then(() => {
+            res.status(201).json({ status: "ok", message: "Usuario registrado con éxito" });
+        })
+        .catch((error) => {
+            // Si el email ya existe en la DB
+            if (error.code === 'ER_DUP_ENTRY') {
+                return res.status(400).send("El email ya está registrado");
+            }
+            console.error("ERROR REAL EN LA DB:", error); // Esto se ve en la terminal negra
+            res.status(500).send("Error en la base de datos: revisá los nombres de las columnas");
+        });
+    } catch (e) {
+        console.error("Error al hashear:", e);
+        res.status(500).send("Error al procesar la contraseña");
+    }
 });
 
 router.get("/", verificarLog(["admin"]), function(req, res) {
